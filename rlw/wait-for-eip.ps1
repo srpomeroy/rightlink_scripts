@@ -1,5 +1,5 @@
 # ---
-# RightScript Name: RL10 Windows Wait For EIP
+# RightScript Name: RL10 Windows Wait For EIP IV-4282
 # Description: On AWS, if an elastic IP address is specified this script will
 #   wait until all API Hosts are reporting the expected IP address for the server,
 #   which is recorded in the user-data
@@ -7,8 +7,7 @@
 # ...
 #
 
-$RS_DIR = 'C:\ProgramData\RightScale\RightLink'
-$RS_ID_FILE = "${RS_DIR}\rightscale-identity"
+$RS_ID_FILE  = "$env:ProgramData\RightScale\RightLink\rightscale-identity"
 
 foreach ($line in (Get-Content $RS_ID_FILE)) {
   if ($line -match 'expected_public_ip=(.+)') {

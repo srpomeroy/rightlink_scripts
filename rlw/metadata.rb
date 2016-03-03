@@ -2,7 +2,7 @@ name        "rlw"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Windows (RLW) to initialize basic functionality"
-version     '10.2.1'
+version     '10.3.1'
 
 recipe      "rlw::setup-automatic-upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
 recipe      "rlw::shutdown-reason", "Print out the reason for shutdown"
@@ -23,4 +23,10 @@ attribute   "UPGRADES_FILE_LOCATION",
   :required => "optional",
   :type => "string",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
+  :recipes => ["rlw::upgrade"]
+
+attribute   "UPGRADE_VERSION",
+  :display_name => "Desired upgrade version, overrides UPGRADES_FILE_LOCATION",
+  :required => "optional",
+  :type => "string",
   :recipes => ["rlw::upgrade"]

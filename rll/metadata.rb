@@ -2,7 +2,7 @@ name        "rll"
 maintainer  "RightScale, Inc."
 license     "see LICENSE file in repository root"
 description "Base scripts for RightLink10 on Linux (RLL) to initialize basic functionality"
-version     '10.2.2'
+version     '10.3.1'
 
 recipe      "rll::enable-monitoring", "Enables RightLink monitoring or installs collectd for RightScale monitoring"
 recipe      "rll::setup-automatic-upgrade", "Periodically checks if an upgrade is available and upgrade if there is."
@@ -59,3 +59,9 @@ attribute   "UPGRADES_FILE_LOCATION",
   :type => "string",
   :default => "https://rightlink.rightscale.com/rightlink/upgrades",
   :recipes => ["rll::upgrade"]
+
+attribute   "UPGRADE_VERSION",
+  :display_name => "Desired upgrade version, overrides UPGRADES_FILE_LOCATION",
+  :required => "optional",
+  :type => "string",
+  :recipes => ["rlw::upgrade"]

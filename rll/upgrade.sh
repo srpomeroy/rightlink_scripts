@@ -1,7 +1,7 @@
 #! /bin/bash -e
 
 # ---
-# RightScript Name: RL10 Linux Upgrade
+# RightScript Name: RL10 Linux Upgrade IV-4282
 # Description: Check whether a RightLink upgrade is available and perform the upgrade.
 # Inputs:
 #   UPGRADES_FILE_LOCATION:
@@ -9,6 +9,15 @@
 #     Category: RightScale
 #     Description: External location of 'upgrades' file
 #     Default: text:https://rightlink.rightscale.com/rightlink/upgrades
+#     Required: false
+#     Advanced: true
+#   UPGRADE_VERSION:
+#     Input Type: single
+#     Category: RightScale
+#     Description: The new version of RightLink to upgrade to. If this input is specified it will override
+#       the input UPGRADES_FILE_LOCATION that contains the location of the upgrade's file location.
+#       A specific version can be used such as 10.3.1 or use 10 to get the latest version available.
+#     Default: "text:"
 #     Required: false
 #     Advanced: true
 # ...
@@ -22,6 +31,9 @@ UPGRADES_FILE_LOCATION=${UPGRADES_FILE_LOCATION:-"https://rightlink.rightscale.c
 
 # Determine directory location of rightlink / rsc
 [[ -e /usr/local/bin/rightlink ]] && bin_dir=/usr/local/bin || bin_dir=/opt/bin
+
+# Determine if the version of rsc supports retry
+[[ $(${bin_dir}/rsc --help | grep retry) ]] && retry_command="--retry=5 --timeout=10" || retry_command=""
 
 upgrade_rightlink() {
   sleep 1
@@ -44,7 +56,7 @@ upgrade_rightlink() {
   # Check updated version in production by connecting to local proxy
   # The update takes a few seconds so retries are done.
   for retry_counter in {1..5}; do
-    new_installed_version=$(${bin_dir}/rsc --x1 .version rl10 index proc 2>/dev/null || true)
+    new_installed_version=$(${bin_dir}/rsc ${retry_command} rl10 show /rll/proc/version 2>/dev/null || true)
     if [[ "$new_installed_version" == "$desired" ]]; then
       logger -t rightlink "New version active - ${new_installed_version}"
       break
@@ -60,7 +72,7 @@ upgrade_rightlink() {
 
   # Report to audit entry that RightLink was upgraded.
   for retry_counter in {1..5}; do
-    instance_href=$(${bin_dir}/rsc --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
+    instance_href=$(${bin_dir}/rsc ${retry_command} --rl10 --x1 ':has(.rel:val("self")).href' cm15 index_instance_session /api/sessions/instance || true)
     if [[ -n "$instance_href" ]]; then
       logger -t rightlink "Instance href found: ${instance_href}"
       break
@@ -71,7 +83,7 @@ upgrade_rightlink() {
   done
 
   if [[ -n "$instance_href" ]]; then
-    audit_entry_href=$(${bin_dir}/rsc --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
+    audit_entry_href=$(${bin_dir}/rsc ${retry_command} --rl10 --xh 'location' cm15 create /api/audit_entries "audit_entry[auditee_href]=${instance_href}" \
                      "audit_entry[detail]=RightLink updated to '${new_installed_version}'" "audit_entry[summary]=RightLink updated" 2>/dev/null)
     if [[ -n "$audit_entry_href" ]]; then
       logger -t rightlink "audit entry created at ${audit_entry_href}"
@@ -98,24 +110,30 @@ upgrade_rightlink() {
 }
 
 # Determine current version of rightlink
-current_version=$(${bin_dir}/rsc rl10 show /rll/proc/version)
+current_version=$(${bin_dir}/rsc ${retry_command} rl10 show /rll/proc/version)
 
 if [[ -z "$current_version" ]]; then
   echo "Can't determine current version of RightLink"
   exit 1
 fi
 
-# Fetch information about what we should become. The "upgrades" file consists of lines formatted
-# as "current_version:upgradeable_new_version". If the "upgrades" file does not exist,
-# or if the current version is not in the file, no upgrade is done.
-re="^\s*${current_version}\s*:\s*(\S+)\s*$"
-match=`curl --silent --show-error --retry 3 ${UPGRADES_FILE_LOCATION} | egrep ${re} || true`
-if [[ "$match" =~ $re ]]; then
-  desired="${BASH_REMATCH[1]}"
+# If $UPGRADE_VERSION is specified then use that for desired version, otherwise check external
+# upgrades file location for possible upgrade version
+if [[ -z "$UPGRADE_VERSION" ]]; then
+  # Fetch information about what we should become. The "upgrades" file consists of lines formatted
+  # as "current_version:upgradeable_new_version". If the "upgrades" file does not exist,
+  # or if the current version is not in the file, no upgrade is done.
+  re="^\s*${current_version}\s*:\s*(\S+)\s*$"
+  match=`curl --silent --show-error --retry 3 ${UPGRADES_FILE_LOCATION} | egrep ${re} || true`
+  if [[ "$match" =~ $re ]]; then
+    desired="${BASH_REMATCH[1]}"
+  else
+    echo "Cannot determine latest version from upgrade file"
+    echo "Tried to match /^${current_version}:/ in ${UPGRADES_FILE_LOCATION}"
+    exit 0
+  fi
 else
-  echo "Cannot determine latest version from upgrade file"
-  echo "Tried to match /^${current_version}:/ in ${UPGRADES_FILE_LOCATION}"
-  exit 0
+  desired="$UPGRADE_VERSION"
 fi
 
 if [[ "$desired" == "$current_version" ]]; then
