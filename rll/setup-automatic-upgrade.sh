@@ -1,7 +1,7 @@
 #! /bin/bash -e
 
 # ---
-# RightScript Name: RL10 Linux Setup Automatic Upgrade
+# RightScript Name: RL10 Linux Setup Automatic Upgrade IV-4282
 # Description: Creates a cron job that performs a daily check to see if
 #   an upgrade to RightLink is available and upgrades if there is.
 # Inputs:
@@ -45,7 +45,7 @@ else
 
   # Determine if running a rightscript or a recipe
   if [[ $(pwd) =~ scripts ]]; then
-    rsc_command="schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\"RL10 Linux Upgrade\""
+    rsc_command="schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\"RL10 Linux Upgrade IV-4282\""
   else
     rsc_command="schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rll::upgrade"
   fi

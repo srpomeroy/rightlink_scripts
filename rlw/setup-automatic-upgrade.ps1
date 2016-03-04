@@ -1,5 +1,5 @@
 # ---
-# RightScript Name: RL10 Windows Setup Automatic Upgrade
+# RightScript Name: RL10 Windows Setup Automatic Upgrade IV-4282
 # Description: Creates a scheduled job that performs a daily check to see if
 #   an upgrade to RightLink is available and upgrades if there is.
 # Inputs:
@@ -41,7 +41,7 @@ if ($env:ENABLE_AUTO_UPGRADE -eq 'false') {
   } else {
     # Determine if running a rightscript or a recipe
     if ((Get-Location) -match 'scripts') {
-      $rscCommand = "schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\\\`"RL10 Windows Upgrade\\\`""
+      $rscCommand = "schedule_right_script /api/right_net/scheduler/schedule_right_script right_script=\\\`"RL10 Windows Upgrade  IV-4282\\\`""
     } else {
       $rscCommand = "schedule_recipe /api/right_net/scheduler/schedule_recipe recipe=rlw::upgrade"
     }
