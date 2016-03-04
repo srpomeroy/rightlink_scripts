@@ -15,7 +15,7 @@
 #     Description: The new version of RightLink to upgrade to. If this input is specified it will override
 #       the input UPGRADES_FILE_LOCATION that contains the location of the upgrade's file location.
 #       A specific version can be used such as 10.3.1 or use 10 to get the latest version available.
-#     Default: "text:"
+#     Default: blank
 #     Required: false
 #     Advanced: true
 # ...
@@ -109,14 +109,14 @@ $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
 $RS_ID_FILE = "$env:ProgramData\RightScale\RightLink\rightscale-identity"
 
 # Determine if the version of rsc supports retry
-$retryCommand = ('','--retry=5 --timeout=60')[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
+$retryCommand = ('',('--retry=5 --timeout=60' -split " "))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
 if (!$env:UPGRADES_FILE_LOCATION) {
   $env:UPGRADES_FILE_LOCATION = 'https://rightlink.rightscale.com/rightlink/upgrades'
 }
 
 # Determine current version of rightlink
-$currentVersion = & "${RIGHTLINK_DIR}\rsc.exe" $retryCommand rl10 index /rll/proc/version 2> $null
+$currentVersion = & "${RIGHTLINK_DIR}\rsc.exe" $retryCommand rl10 show /rll/proc/version 2> $null
 
 if (!$currentVersion) {
   Write-Output 'Cannot determine current version of RightLink'

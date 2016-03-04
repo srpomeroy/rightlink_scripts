@@ -17,7 +17,7 @@
 #     Description: The new version of RightLink to upgrade to. If this input is specified it will override
 #       the input UPGRADES_FILE_LOCATION that contains the location of the upgrade's file location.
 #       A specific version can be used such as 10.3.1 or use 10 to get the latest version available.
-#     Default: "text:"
+#     Default: blank
 #     Required: false
 #     Advanced: true
 # ...
