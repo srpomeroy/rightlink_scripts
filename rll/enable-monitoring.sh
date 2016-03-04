@@ -175,6 +175,7 @@ else
   # If we installed a custom forward port of collectd4 previously, remove it now to
   # replace it with OS standard collectd.
   if which apt-get >/dev/null 2>&1; then
+    apt-get update -y
     if [[ -e /etc/apt/preferences.d/rightscale-collectd-pin-1001 ]]; then
       sudo rm /etc/apt/preferences.d/rightscale-collectd-pin-1001
     fi
