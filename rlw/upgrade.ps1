@@ -30,10 +30,10 @@ $upgradeFunction = {
     # Give the rightscript process this was called from time to finish
     Sleep 5
 
-    $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
-    $TMP_DIR = "$env:TEMP\Upgrade"
+    $RIGHTLINK_DIR = """${env:ProgramFiles}\RightScale\RightLink"""
+    $TMP_DIR = """${env:TEMP}\Upgrade"""
     # Determine if the version of rsc supports retry
-    $retryCommand = ('',('--retry=5 --timeout=60' -split " "))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
+    $retryCommand = ('',('--retry=5 --timeout=60' -split ' '))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
     # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
     # and test connectivity.
@@ -111,7 +111,7 @@ $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
 $RS_ID_FILE = "$env:ProgramData\RightScale\RightLink\rightscale-identity"
 
 # Determine if the version of rsc supports retry
-$retryCommand = ('',('--retry=5 --timeout=60' -split " "))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
+$retryCommand = ('',('--retry=5 --timeout=60' -split ' '))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
 if (!$env:UPGRADES_FILE_LOCATION) {
   $env:UPGRADES_FILE_LOCATION = 'https://rightlink.rightscale.com/rightlink/upgrades'
