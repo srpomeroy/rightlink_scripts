@@ -54,7 +54,7 @@ $upgradeFunction = {
     # Check updated version in production by connecting to local proxy
     # The update takes a few seconds so retries are done.
     for ($i = 1; $i -le 5; $i += 1) {
-      $newInstalledVersion = & ${RIGHTLINK_DIR}\rsc.exe $retryCommand /rll/proc/version 2> $null
+      $newInstalledVersion = & ${RIGHTLINK_DIR}\rsc.exe $retryCommand rl10 show /rll/proc/version 2> $null
       if ($newInstalledVersion -eq $desiredVersion) {
         Write-Output """New version active - ${newInstalledVersion}"""
         break
