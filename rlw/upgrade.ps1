@@ -26,12 +26,14 @@
 # if a downgrade is best as found in the $UPGRADES_FILE_LOCATION
 
 $upgradeFunction = {
-  function upgradeRightLink($currentVersion, $desiredVersion, $retryCommand) {
+  function upgradeRightLink($currentVersion, $desiredVersion) {
     # Give the rightscript process this was called from time to finish
     Sleep 5
 
     $RIGHTLINK_DIR = "$env:ProgramFiles\RightScale\RightLink"
     $TMP_DIR = "$env:TEMP\Upgrade"
+    # Determine if the version of rsc supports retry
+    $retryCommand = ('',('--retry=5 --timeout=60' -split " "))[[String](& ${RIGHTLINK_DIR}\rsc.exe --help) -match 'retry']
 
     # The self-upgrade API call doesn't actually upgrade the executable on Windows, but it does flush out audit entries
     # and test connectivity.
@@ -213,7 +215,7 @@ if ($newVersion -eq $desiredVersion) {
 
   Write-Output 'Restarting RightLink to pick up new version'
   # Fork a new task since this main process is started by RightLink and we are restarting it.
-  Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} ${retryCommand} }"
+  Start-Process Powershell -ArgumentList "-Command & { $upgradeFunction upgradeRightLink ${currentVersion} ${desiredVersion} }"
 } else {
   Write-Output "Updated version does not appear to be desired version: ${newVersion}"
   Exit 1
