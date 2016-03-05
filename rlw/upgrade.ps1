@@ -127,7 +127,7 @@ if (!$currentVersion) {
 
 # If $UPGRADE_VERSION is specified then use that for desired version, otherwise check external
 # upgrades file location for possible upgrade version
-if (!$UPGRADE_VERSION) {
+if (!$env:UPGRADE_VERSION) {
   # Fetch information about what we should become. The "upgrades" file consists of lines formatted
   # as "currentVersion:desiredVersion". If the "upgrades" file does not exist,
   # or if the current version is not in the file, no upgrade is done.
@@ -140,7 +140,7 @@ if (!$UPGRADE_VERSION) {
     Exit 0
   }
 } else {
-  $desiredVersion = $UPGRADE_VERSION
+  $desiredVersion = $env:UPGRADE_VERSION
 }
 
 if ($desiredVersion -eq $currentVersion) {
