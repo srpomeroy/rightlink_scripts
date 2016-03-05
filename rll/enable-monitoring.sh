@@ -175,7 +175,6 @@ else
   # If we installed a custom forward port of collectd4 previously, remove it now to
   # replace it with OS standard collectd.
   if which apt-get >/dev/null 2>&1; then
-    apt-get update -y
     if [[ -e /etc/apt/preferences.d/rightscale-collectd-pin-1001 ]]; then
       sudo rm /etc/apt/preferences.d/rightscale-collectd-pin-1001
     fi
@@ -259,6 +258,7 @@ else
 
   # Install platform specific collectd packages
   if [[ -d /etc/apt ]]; then
+    retry_command sudo apt-get update -y
     retry_command sudo apt-get install -y curl collectd-core
   elif [[ -d /etc/yum.repos.d ]]; then
     # keep these lines separate, yum doesn't fail for missing packages when grouped together
