@@ -15,6 +15,7 @@
 #   - rightlink.sh
 #   - rs-cloudinit.sh
 #   - scriptpolicy.ps1
+#   - setup_winrm.txt
 #   - softlayer.json
 # Inputs:
 #   CLOUD:
@@ -120,6 +121,7 @@
 #      The user packer will use to SSH into the instance.  Examples: ubuntu, centos, ec2-user, root
 #     Required: true
 #     Advanced: true
+#     Default: text:ubuntu
 #   AWS_SUBNET_ID:
 #     Input Type: single
 #     Category: AWS
@@ -159,7 +161,7 @@ sed -i "s#%%RIGHTLINK_VERSION%%#$RIGHTLINK_VERSION#g" rightlink.*
 
 # Copy config files
 echo "Copying scripts"
-for file in *.sh *.ps1; do
+for file in *.sh *.ps1 *.txt; do
   cp ${RS_ATTACH_DIR}/${file} ${PACKER_DIR}
 done
 
@@ -191,7 +193,16 @@ case "$CLOUD" in
   sudo mkdir -p $dir && sudo chown $user $dir
   ;;
 "ec2")
+  if [[ `echo $IMAGE_NAME | tr [:upper:] [:lower:]` =~ windows ]]; then
+    communicator="winrm"
+    provisioner='"type": "powershell", "scripts": ["rightlink.ps1"]'
+  else
+    communicator="ssh"
+    provisioner='"type": "shell", "scripts": [ "cloudinit.sh", "rightlink.sh", "cleanup.sh" ]'
+  fi
   sed -i "s#%%BUILDER_TYPE%%#amazon-ebs#g" ${PACKER_CONF}
+  sed -i "s#%%COMMUNICATOR%%#$communicator#g" ${PACKER_CONF}
+  sed -i "s#%%PROVISIONER%%#$provisioner#g" ${PACKER_CONF}
 
   if [ ! -z "$AWS_VPC_ID" ]; then
     sed -i "s#%%VPC_ID%%#$AWS_VPC_ID#g" ${PACKER_CONF}
@@ -207,7 +218,7 @@ case "$CLOUD" in
 
   ;;
 "google")
-  if [[ $IMAGE_NAME =~ windows ]]; then
+  if [[ `echo $IMAGE_NAME | tr [:upper:] [:lower:]` =~ windows ]]; then
     communicator="winrm"
     disk_size="50"
     provisioner='"type": "powershell", "scripts": ["rightlink.ps1","scriptpolicy.ps1"]'

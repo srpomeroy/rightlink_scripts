@@ -1,3 +1,11 @@
+$erroractionpreference = 'stop'
+$RIGHTLINK_VERSION = "%%RIGHTLINK_VERSION%%"
+
+if(!($RIGHTLINK_VERSION)) {
+    Write-Output "No RightLink version specified. Skipping RightLink install."
+    EXIT 0
+}
+
 Write-Output "Setting LocalAccountTokenFilterPolicy"
 Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System -Name LocalAccountTokenFilterPolicy -Type DWord -Value 1
 
@@ -10,7 +18,7 @@ netsh advfirewall firewall add rule name="RightScale WinRM" remoteip=any localpo
 
 Write-Output 'Installing RightLink...'
 $filename = "rightlink.install.ps1";
-$link = "https://rightlink.rightscale.com/rll/%%RIGHTLINK_VERSION%%/$filename";
+$link = "https://rightlink.rightscale.com/rll/$RIGHTLINK_VERSION/$filename";
 $dstDir = "$env:temp";
 $remotePath = Join-Path $dstDir $filename;
 $client = New-Object System.Net.Webclient
