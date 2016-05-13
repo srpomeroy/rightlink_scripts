@@ -171,7 +171,8 @@ case "$CLOUD" in
 "azure")
   account_file=${PACKER_DIR}/publishsettings
   echo "$AZURE_PUBLISHSETTINGS" > $account_file
-
+  
+  shopt -s nocasematch
   if [[ $IMAGE_NAME =~ Windows ]]; then
     os_type="Windows"
     provisioner='"type": "azure-custom-script-extension", "script_path": "rightlink.ps1"'
@@ -193,9 +194,14 @@ case "$CLOUD" in
   sudo mkdir -p $dir && sudo chown $user $dir
   ;;
 "ec2")
-  if [[ `echo $IMAGE_NAME | tr [:upper:] [:lower:]` =~ windows ]]; then
+  shopt -s nocasematch
+  if [[ $IMAGE_NAME =~ Windows ]]; then
     communicator="winrm"
     provisioner='"type": "powershell", "scripts": ["rightlink.ps1"]'
+    userdatafile='"user_data_file": "setup_winrm.txt",'
+    winrmusername='"winrm_username": "Administrator",'
+    sed -i "s#%%USERDATAFILE%%#$userdatafile#g" ${PACKER_CONF}
+    sed -i "s#%%WINRMUSERNAME%%#$winrmusername#g" ${PACKER_CONF}
   else
     communicator="ssh"
     provisioner='"type": "shell", "scripts": [ "cloudinit.sh", "rightlink.sh", "cleanup.sh" ]'
@@ -203,7 +209,7 @@ case "$CLOUD" in
   sed -i "s#%%BUILDER_TYPE%%#amazon-ebs#g" ${PACKER_CONF}
   sed -i "s#%%COMMUNICATOR%%#$communicator#g" ${PACKER_CONF}
   sed -i "s#%%PROVISIONER%%#$provisioner#g" ${PACKER_CONF}
-
+  
   if [ ! -z "$AWS_VPC_ID" ]; then
     sed -i "s#%%VPC_ID%%#$AWS_VPC_ID#g" ${PACKER_CONF}
   else
@@ -218,7 +224,8 @@ case "$CLOUD" in
 
   ;;
 "google")
-  if [[ `echo $IMAGE_NAME | tr [:upper:] [:lower:]` =~ windows ]]; then
+  shopt -s nocasematch
+  if [[ $IMAGE_NAME =~ Windows ]]; then
     communicator="winrm"
     disk_size="50"
     provisioner='"type": "powershell", "scripts": ["rightlink.ps1","scriptpolicy.ps1"]'
